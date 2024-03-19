@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JClone Murder Mystery</title>
+    <style>
+     /* General Styles */
+     body {
+        font-family: 'Wallpoet', cursive;
+        background-image: url('https://images.pexels.com/photos/9629921/pexels-photo-9629921.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+        background-size: cover;
+        background-position: center;
+        margin: 0;
+        padding: 0;
+        color: #e6e6e6;
+      }
+
+      /* Room Form Styles */
+      #roomForm {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+        margin: 50px auto;
+        text-align: center;
+      }
+
+      #roomForm h1 {
+        color: #e6e6e6;
+        margin-top: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      #roomForm input[type="text"] {
+        padding: 10px;
+        border: 1px solid #cccccc;
+        border-radius: 3px;
+        width: 70%;
+        margin-bottom: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #333333;
+      }
+
+      #roomForm button {
+        padding: 10px 20px;
+        background-color: #800000;
+        color: #e6e6e6;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        margin: 5px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      #roomForm button:hover {
+        background-color: #b30000;
+      }
+
+      /* Game Container Styles */
+      #gameContainer {
+        background-color: rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        max-width: 800px;
+        margin: 50px auto;
+        text-align: center;
+      }
+
+      /* Player Count Styles */
+      #playerCount {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        font-size: 16px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #e6e6e6;
+        padding: 5px 10px;
+        border-radius: 3px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Wallpoet&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="roomForm">
+      <h1>JClone Murder Mystery</h1>
+      <label>Your Name:</label>
+      <input type="text" id="nameInput" placeholder="Enter your name" />
+      <label>Room Code:</label>
+      <input type="text" id="roomCodeInput" placeholder="Enter room code" />
+      <button id="joinRoomBtn">Join Room</button>
+      <button id="hostRoomBtn">Host Room</button>
+    </div>
+
+    <div id="gameContainer" style="display: none;">
+      <!-- This is where you'll render the game UI -->
+    </div>
+
+    <div id="playerCount"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      const nameInput = document.getElementById('nameInput');
+      const roomCodeInput = document.getElementById('roomCodeInput');
+      const joinRoomBtn = document.getElementById('joinRoomBtn');
+      const hostRoomBtn = document.getElementById('hostRoomBtn');
+      const gameContainer = document.getElementById('gameContainer');
+      const playerCountElement = document.getElementById('playerCount');
+
+      joinRoomBtn.addEventListener('click', () => {
+        const name = nameInput.value;
+        const roomCode = roomCodeInput.value;
+        if (name && roomCode) {
+          socket.emit('joinRoom', { name, roomCode });
+          showGameContainer(roomCode);
+        } else {
+          alert('Please enter your name and a room code.');
+        }
+      });
+
+      hostRoomBtn.addEventListener('click', () => {
+        const name = nameInput.value;
+        if (name) {
+          const roomCode = generateRoomCode(); // Implement your room code generation logic
+          socket.emit('hostRoom', { name, roomCode });
+          showGameContainer(roomCode);
+        } else {
+          alert('Please enter your name.');
+        }
+      });
+
+      socket.on('roomJoined', (roomCode, playerCount, players) => {
+        console.log(`Joined room ${roomCode}`);
+        updatePlayerCount(playerCount, players);
+        updateURLWithRoomCode(roomCode);
+      });
+
+      socket.on('roomHosted', (roomCode, playerCount, players) => {
+        console.log(`Hosted room ${roomCode}`);
+        updatePlayerCount(playerCount, players);
+        updateURLWithRoomCode(roomCode);
+      });
+
+      socket.on('playerJoined', (playerCount, players) => {
+        updatePlayerCount(playerCount, players);
+      });
+
+      socket.on('playerLeft', (playerCount, players) => {
+        updatePlayerCount(playerCount, players);
+      });
+
+      function showGameContainer(roomCode) {
+        document.getElementById('roomForm').style.display = 'none';
+        gameContainer.style.display = 'block';
+        updateURLWithRoomCode(roomCode);
+      }
+
+      function generateRoomCode() {
+        // Implement your room code generation logic here
+        // For example, you could generate a random 4-digit code
+        return Math.floor(1000 + Math.random() * 9000);
+      }
+
+      function updatePlayerCount(playerCount, players) {
+        let playersText = '';
+        for (const player of players) {
+          playersText += `${player.name}, `;
+        }
+        playersText = playersText.slice(0, -2); // Remove the trailing comma and space
+        playerCountElement.textContent = `Players in room (${playerCount}): ${playersText}`;
+      }
+
+      function updateURLWithRoomCode(roomCode) {
+        const newURL = new URL(window.location.href);
+        newURL.searchParams.set('room', roomCode);
+        window.history.pushState({}, '', newURL.toString());
+      }
+    </script>
+  </body>
+</html>
