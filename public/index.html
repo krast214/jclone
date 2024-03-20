@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>JClone Murder Mystery</title>
+    <title>JClone Games</title>
     <style>
      /* General Styles */
      body {
         font-family: 'Wallpoet', cursive;
-        background-image: url('https://images.pexels.com/photos/9629921/pexels-photo-9629921.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+        background-image: url('https://static.wikia.nocookie.net/leagueoflegends/images/7/7b/League_of_Legends_Cover.jpg/revision/latest/scale-to-width-down/1200?cb=20191018222445');
         background-size: cover;
         background-position: center;
         margin: 0;
@@ -79,10 +79,42 @@
         border-radius: 3px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
       }
+      /* Game Selection Styles */
+      #gameSelection {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+      }
+
+      .gameBox {
+        width: 200px;
+        height: 200px;
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #333333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        margin: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .gameBox:hover {
+        transform: scale(1.05);
+      }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Wallpoet&display=swap" rel="stylesheet">
   </head>
   <body>
+    <div id="gameSelection">
+      <div class="gameBox" data-game="catan-clone">Catan Clone</div>
+      <div class="gameBox" data-game="game-2">Game 2</div>
+      <div class="gameBox" data-game="game-3">Game 3</div>
+      <div class="gameBox" data-game="game-4">Game 4</div>
+    </div>
     <div id="roomForm">
       <h1>JClone Murder Mystery</h1>
       <label>Your Name:</label>
@@ -177,6 +209,14 @@
         newURL.searchParams.set('room', roomCode);
         window.history.pushState({}, '', newURL.toString());
       }
+      const gameBoxes = document.querySelectorAll('.gameBox');
+      gameBoxes.forEach(box => {
+        box.addEventListener('click', () => {
+          const gameType = box.dataset.game;
+          // Handle game selection logic here
+          console.log(`Selected game: ${gameType}`);
+        });
+      });
     </script>
   </body>
 </html>
